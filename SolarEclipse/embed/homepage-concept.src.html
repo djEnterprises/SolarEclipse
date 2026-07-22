@@ -1,0 +1,72 @@
+<style>
+  :root{
+    --bg:#070A12; --ink:#E9E6DD; --muted:#8A91A0; --accent:#D9A441;
+    --line:#1B2233;
+    --display:Georgia,'Iowan Old Style','Palatino Linotype','Times New Roman',serif;
+    --body:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Helvetica,Arial,sans-serif;
+    --mono:'SF Mono',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+    /* the ambient background reads these */
+    --sim-bg:#070A12; --star:rgba(233,230,221,0.85); --sun:#FFD76E; --sun-core:#FFF3C4;
+    --mercury:#B9A591; --venus:#E8C97A; --earth:#6DB1FF; --moon:#CFD4E2; --mars:#E0764F;
+    --jupiter:#D9A96B; --saturn:#E3CF9B; --uranus:#9ADBE8; --neptune:#7A96F0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;}
+  .base{position:fixed;inset:0;z-index:0;background:var(--bg);}
+  #bg{position:fixed;inset:0;z-index:1;opacity:0.55;}
+  .scrim{position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(130% 100% at 22% 42%, rgba(7,10,18,0.78) 0%, rgba(7,10,18,0.5) 46%, rgba(7,10,18,0.15) 100%);}
+  .page{position:relative;z-index:3;min-height:100svh;display:flex;flex-direction:column;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:22px clamp(20px,5vw,54px);}
+  .wordmark{font-family:var(--display);font-size:1.3rem;}
+  .wordmark b{color:var(--accent);font-weight:600;}
+  .topbar nav{display:flex;gap:clamp(14px,2.6vw,32px);font-family:var(--mono);font-size:0.74rem;
+    text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);}
+  .hero{flex:1;display:flex;align-items:center;padding:0 clamp(24px,7vw,90px);}
+  .hero .inner{max-width:820px;}
+  .kicker{font-family:var(--mono);text-transform:uppercase;letter-spacing:0.2em;font-size:0.74rem;color:var(--muted);}
+  h1{font-family:var(--display);font-weight:600;font-size:clamp(2.6rem,7.5vw,5.4rem);line-height:1.04;
+    letter-spacing:-0.01em;margin:24px 0 0;text-shadow:0 2px 40px rgba(7,10,18,0.9);}
+  h1 em{font-style:italic;color:var(--accent);}
+  .sub{margin-top:26px;max-width:56ch;font-size:clamp(1.02rem,1.5vw,1.22rem);line-height:1.6;
+    color:rgba(233,230,221,0.9);text-shadow:0 1px 24px rgba(7,10,18,0.9);}
+  .rule{width:120px;height:1px;background:var(--accent);margin:30px 0;}
+  .chip{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:0.82rem;
+    color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:10px 18px;text-decoration:none;
+    transition:border-color .3s ease;}
+  .chip:hover{border-color:var(--accent);}
+  .chip .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);}
+  .chip .go{color:var(--accent);}
+  .foot{padding:22px clamp(24px,7vw,90px) 40px;font-family:var(--mono);font-size:0.72rem;color:var(--muted);
+    letter-spacing:0.04em;border-top:1px solid var(--line);display:flex;gap:22px;flex-wrap:wrap;}
+  @media (max-width:640px){ .topbar nav a:nth-child(-n+2){display:none;} }
+</style>
+
+<div class="base"></div>
+<div id="bg"></div>
+<div class="scrim"></div>
+
+<div class="page">
+  <header class="topbar">
+    <div class="wordmark">dj<b>Enterprises</b></div>
+    <nav><a>Apps</a><a>About</a><a>Contact</a></nav>
+  </header>
+  <section class="hero">
+    <div class="inner">
+      <span class="kicker">Daniel Jason Ehrlich · djenterprises.ai</span>
+      <h1>Software, built from <em>first principles</em>.</h1>
+      <p class="sub">A studio crafting calm, private, AI-native apps — health companions, games, and tools. Including a solar system that predicts real eclipses from gravity alone.</p>
+      <div class="rule"></div>
+      <a class="chip" href="/SolarEclipse/"><span class="dot"></span> Explore SolarEclipse <span class="go">→</span></a>
+    </div>
+  </section>
+  <footer class="foot">
+    <span>© 2026 djEnterprises</span>
+    <span>Calm · Private · AI-native</span>
+  </footer>
+</div>
+
+<script src="solar-background.js"></script>
+<script>
+  SolarBackground.mount({ container: document.getElementById('bg'), scaleAU: 1.9, stepsPerFrame: 6, opacity: 1 });
+</script>

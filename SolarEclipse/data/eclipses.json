@@ -1,0 +1,118 @@
+{
+  "meta": {
+    "seedEpoch": "2024-01-01",
+    "horizonYears": 5,
+    "integrationSteps": 175320,
+    "timestepMinutes": 15,
+    "bodies": [
+      "Sun",
+      "Mercury",
+      "Venus",
+      "Earth",
+      "Moon",
+      "Mars",
+      "Jupiter",
+      "Saturn",
+      "Uranus",
+      "Neptune"
+    ],
+    "matched": 10,
+    "total": 10,
+    "correctType": 10,
+    "meanTimingErrorHours": 5.5,
+    "maxTimingErrorHours": 9.5,
+    "energyDriftRelative": 1.2012431276262083e-11
+  },
+  "eclipses": [
+    {
+      "catalogDate": "2024-04-08",
+      "catalogType": "total",
+      "predictedUTC": "2024-04-08 18:29 UTC",
+      "predictedType": "total",
+      "axisMissKm": 2266,
+      "timingErrorHours": 6.5,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2024-10-02",
+      "catalogType": "annular",
+      "predictedUTC": "2024-10-02 19:29 UTC",
+      "predictedType": "annular",
+      "axisMissKm": 2306,
+      "timingErrorHours": 7.5,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2025-03-29",
+      "catalogType": "partial",
+      "predictedUTC": "2025-03-29 11:59 UTC",
+      "predictedType": "partial",
+      "axisMissKm": 6708,
+      "timingErrorHours": 0,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2025-09-21",
+      "catalogType": "partial",
+      "predictedUTC": "2025-09-21 21:29 UTC",
+      "predictedType": "partial",
+      "axisMissKm": 6871,
+      "timingErrorHours": 9.5,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2026-02-17",
+      "catalogType": "annular",
+      "predictedUTC": "2026-02-17 14:29 UTC",
+      "predictedType": "annular",
+      "axisMissKm": 6152,
+      "timingErrorHours": 2.5,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2026-08-12",
+      "catalogType": "total",
+      "predictedUTC": "2026-08-12 20:29 UTC",
+      "predictedType": "total",
+      "axisMissKm": 5655,
+      "timingErrorHours": 8.5,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2027-02-06",
+      "catalogType": "annular",
+      "predictedUTC": "2027-02-06 19:14 UTC",
+      "predictedType": "annular",
+      "axisMissKm": 1788,
+      "timingErrorHours": 7.2,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2027-08-02",
+      "catalogType": "total",
+      "predictedUTC": "2027-08-02 13:44 UTC",
+      "predictedType": "total",
+      "axisMissKm": 817,
+      "timingErrorHours": 1.7,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2028-01-26",
+      "catalogType": "annular",
+      "predictedUTC": "2028-01-26 19:14 UTC",
+      "predictedType": "annular",
+      "axisMissKm": 2638,
+      "timingErrorHours": 7.2,
+      "typeMatch": true
+    },
+    {
+      "catalogDate": "2028-07-22",
+      "catalogType": "total",
+      "predictedUTC": "2028-07-22 07:29 UTC",
+      "predictedType": "total",
+      "axisMissKm": 3978,
+      "timingErrorHours": -4.5,
+      "typeMatch": true
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+name: Verify against the NASA catalog
+
+# The physics is the product, so the physics is the test: integrate 5 years of
+# the solar system from raw gravity and require every NASA-cataloged solar
+# eclipse in the window to be predicted with the correct type — zero missed,
+# zero spurious. verify_range.js exits nonzero otherwise.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Catalog audit — seed 2024-01-01, 5 years (supported window)
+        run: node solar-eclipse-sim/verify_range.js 2024-01-01 5
+      - name: Embed bundle is reproducible from source
+        run: |
+          cp SolarEclipse/embed/solar-background.js /tmp/committed.js
+          node solar-eclipse-sim/build_embed.js
+          diff /tmp/committed.js SolarEclipse/embed/solar-background.js

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OG template</title>
+<style>
+  :root {
+    --sim-bg:#070A12; --star:rgba(233,230,221,0.85); --accent:#D9A441; --sun:#FFD76E; --sun-core:#FFF3C4;
+    --mercury:#B9A591; --venus:#E8C97A; --earth:#6DB1FF; --moon:#CFD4E2; --mars:#E0764F;
+    --jupiter:#D9A96B; --saturn:#E3CF9B; --uranus:#9ADBE8; --neptune:#7A96F0;
+    --mono-stack:'SF Mono',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+    --display:Georgia,'Iowan Old Style','Palatino Linotype','Times New Roman',serif;
+    --ink:#E9E6DD; --muted:#89909F;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1200px; height:630px; overflow:hidden; background:#070A12; }
+  #ogOrbit { position:absolute; inset:0; width:1200px; height:630px; }
+  .scrim { position:absolute; inset:0; background:
+    linear-gradient(105deg, rgba(7,10,18,0.96) 30%, rgba(7,10,18,0.55) 55%, rgba(7,10,18,0.1) 78%); }
+  .content { position:absolute; left:72px; top:0; height:630px; width:720px; display:flex; flex-direction:column; justify-content:center; }
+  .wordmark { position:absolute; left:72px; top:52px; font-family:var(--display); font-size:30px; color:var(--ink); }
+  .wordmark b { color:var(--accent); font-weight:600; }
+  .kicker { font-family:var(--mono-stack); text-transform:uppercase; letter-spacing:0.2em; font-size:15px; color:var(--muted); margin-bottom:26px; }
+  h1 { font-family:var(--display); font-weight:600; font-size:72px; line-height:1.04; letter-spacing:-0.01em; color:var(--ink); }
+  .rule { width:120px; height:2px; background:var(--accent); margin:30px 0; }
+  .stat { font-family:var(--mono-stack); font-size:19px; letter-spacing:0.01em; color:var(--ink); }
+  .stat b { color:var(--accent); font-weight:400; }
+  .foot { position:absolute; left:72px; bottom:48px; font-family:var(--mono-stack); font-size:14px; color:var(--muted); letter-spacing:0.04em; }
+</style>
+</head>
+<body>
+  <canvas id="ogOrbit"></canvas>
+  <div class="scrim"></div>
+  <div class="wordmark">Solar<b>Eclipse</b></div>
+  <div class="content">
+    <div class="kicker">An N-body solar system · djEnterprises</div>
+    <h1>Ten bodies,<br>one law,<br>real eclipses.</h1>
+    <div class="rule"></div>
+    <div class="stat"><b>10 / 10</b> NASA-cataloged eclipses — found from gravity alone</div>
+  </div>
+  <div class="foot">djenterprises.ai/SolarEclipse</div>
+
+  <script src="core/ephemeris.js"></script>
+  <script src="core/physics.js"></script>
+  <script src="app/simengine.js"></script>
+  <script>
+    // fixed seed so the composition is stable across regenerations
+    const sim = new window.SolarSim({
+      orbitCanvas: document.getElementById('ogOrbit'),
+      ambient: true, scaleAU: 2.0,
+      startDate: new Date('2026-08-01T00:00:00Z'),
+      stepsPerFrame: 30,
+    });
+    sim.play();
+    window.__ogReady = false;
+    setTimeout(() => { window.__ogReady = true; }, 100);
+  </script>
+</body>
+</html>

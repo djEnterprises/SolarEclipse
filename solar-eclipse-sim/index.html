@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solar System from First Principles — N-Body Eclipse Prediction</title>
+<style>
+  :root {
+    --bg: #06080f;
+    --panel: #0d1120;
+    --panel2: #11162a;
+    --line: #1f2742;
+    --text: #dde3f2;
+    --muted: #7c86a3;
+    --accent: #e8a33d;
+    --sun: #ffd76e;
+    --good: #5dd39e;
+    --total: #e8a33d;
+    --annular: #6db1ff;
+    --partial: #9a8fd1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.5 "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+  }
+  header {
+    padding: 14px 22px 12px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  }
+  header h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.4px; }
+  header h1 .dot { color: var(--accent); }
+  header .sub { color: var(--muted); font-size: 12px; }
+  main { flex: 1; display: flex; min-height: 0; }
+  #viewWrap { flex: 1; position: relative; min-width: 0; }
+  canvas { display: block; }
+  #view { width: 100%; height: 100%; }
+  aside {
+    width: 360px; border-left: 1px solid var(--line); background: var(--panel);
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  section { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  h2 { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 10px; font-weight: 600; }
+  #dateBig { font-size: 22px; letter-spacing: 0.5px; }
+  #dateSub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12.5px; }
+  .row .k { color: var(--muted); }
+  .controls { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  button {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 7px; padding: 7px 13px; font: inherit; font-size: 12.5px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: #2a1f0c; border-color: var(--accent); color: var(--accent); }
+  input[type=range] { flex: 1; accent-color: var(--accent); min-width: 80px; }
+  .scaleBtns button.active { border-color: var(--accent); color: var(--accent); }
+  #emCanvas { width: 100%; height: 190px; background: #080b15; border: 1px solid var(--line); border-radius: 8px; }
+  #log { display: flex; flex-direction: column; gap: 8px; }
+  .event {
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px;
+    background: var(--panel2); font-size: 12.5px;
+  }
+  .event .badge {
+    display: inline-block; font-size: 10.5px; letter-spacing: 1px; border-radius: 4px;
+    padding: 1px 7px; margin-right: 8px; font-weight: 700;
+  }
+  .badge.total { background: #33250c; color: var(--total); }
+  .badge.annular { background: #0d2238; color: var(--annular); }
+  .badge.partial { background: #1d1a31; color: var(--partial); }
+  .event .meta { color: var(--muted); font-size: 11.5px; margin-top: 3px; }
+  .event .verified { color: var(--good); }
+  #banner {
+    position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+    background: rgba(20, 14, 3, 0.92); border: 1px solid var(--accent); color: var(--accent);
+    border-radius: 10px; padding: 10px 22px; font-size: 14px; letter-spacing: 1px;
+    display: none; text-align: center; pointer-events: none;
+  }
+  #physics { color: var(--muted); font-size: 11.5px; }
+  #physics .law {
+    color: var(--text); background: var(--panel2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 10px; margin: 8px 0; font-size: 13px; text-align: center;
+  }
+  .empty { color: var(--muted); font-size: 12px; font-style: italic; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SOLAR SYSTEM FROM FIRST PRINCIPLES<span class="dot"> ●</span></h1>
+  <span class="sub">10-body Newtonian gravity · velocity Verlet @ 15 min · eclipses are not programmed in — they emerge</span>
+</header>
+<main>
+  <div id="viewWrap">
+    <canvas id="view"></canvas>
+    <div id="banner"></div>
+  </div>
+  <aside>
+    <section>
+      <h2>SIMULATION CLOCK</h2>
+      <div id="dateBig">—</div>
+      <div id="dateSub">—</div>
+      <div class="controls">
+        <button id="playBtn" class="primary">❚❚ Pause</button>
+        <input id="speed" type="range" min="0" max="100" value="35">
+        <span id="speedLabel" style="color:var(--muted);font-size:11.5px;width:84px;text-align:right">—</span>
+      </div>
+      <div class="controls scaleBtns">
+        <button id="scaleInner" class="active">Inner system</button>
+        <button id="scaleOuter">Full system</button>
+        <button id="jumpBtn">⏩ Predict next eclipse</button>
+      </div>
+    </section>
+    <section>
+      <h2>EARTH–MOON SHADOW GEOMETRY</h2>
+      <canvas id="emCanvas"></canvas>
+      <div class="row"><span class="k">Sun–Moon separation (geocentric)</span><span id="elong">—</span></div>
+      <div class="row"><span class="k">Shadow-axis miss distance</span><span id="axisMiss">—</span></div>
+    </section>
+    <section>
+      <h2>PREDICTED SOLAR ECLIPSES</h2>
+      <div id="log"><div class="empty">None yet — let the physics run, or press “Predict next eclipse”.</div></div>
+    </section>
+    <section id="physics">
+      <h2>THE ONLY RULE IN THE LOOP</h2>
+      <div class="law">aᵢ = Σⱼ G mⱼ (rⱼ − rᵢ) / |rⱼ − rᵢ|³</div>
+      Initial positions &amp; velocities are seeded once from standard
+      ephemerides at the start epoch. After that the integrator knows nothing
+      about orbits or eclipses — when the Moon's shadow cone sweeps the Earth,
+      that's Newton, not a lookup table.
+      <div class="row" style="margin-top:10px"><span class="k">Relative energy drift</span><span id="drift">—</span></div>
+      <div class="row"><span class="k">Integrated so far</span><span id="elapsedSim">—</span></div>
+    </section>
+  </aside>
+</main>
+
+<script src="ephemeris.js"></script>
+<script src="physics.js"></script>
+<script>
+'use strict';
+const Eph = window.Ephemeris, Phy = window.Physics;
+
+// Published NASA catalog dates — used ONLY to badge predictions after the fact
+const CATALOG = [
+  ['2026-02-17','annular'],['2026-08-12','total'],['2027-02-06','annular'],
+  ['2027-08-02','total'],['2028-01-26','annular'],['2028-07-22','total'],
+  ['2029-01-14','partial'],['2029-06-12','partial'],['2029-07-11','partial'],
+  ['2029-12-05','partial'],['2030-06-01','annular'],['2030-11-25','total'],
+];
+
+const DT = 1 / 96;                       // 15-minute timestep, always
+const jd0 = Eph.dateToJd(new Date());
+const sim = new Phy.NBodySimulation(jd0);
+const detector = new Phy.EclipseDetector();
+
+const STYLE = {
+  Sun:     { color: '#ffd76e', r: 7 },
+  Mercury: { color: '#b9a591', r: 2.2 },
+  Venus:   { color: '#e8c97a', r: 3.2 },
+  Earth:   { color: '#6db1ff', r: 3.4 },
+  Moon:    { color: '#cfd4e2', r: 1.6 },
+  Mars:    { color: '#e0764f', r: 2.8 },
+  Jupiter: { color: '#d9a96b', r: 5.5 },
+  Saturn:  { color: '#e3cf9b', r: 5 },
+  Uranus:  { color: '#9adbe8', r: 4 },
+  Neptune: { color: '#7a96f0', r: 4 },
+};
+
+const view = document.getElementById('view');
+const vctx = view.getContext('2d');
+const em = document.getElementById('emCanvas');
+const emctx = em.getContext('2d');
+
+let playing = true;
+let scaleAU = 1.8;                       // inner-system view
+let stepsPerFrame = 12;
+let jumping = false;
+const trails = sim.names.map(() => []);
+const TRAIL_MAX = 900;
+
+function resize() {
+  const wrap = document.getElementById('viewWrap');
+  view.width = wrap.clientWidth * devicePixelRatio;
+  view.height = wrap.clientHeight * devicePixelRatio;
+  em.width = em.clientWidth * devicePixelRatio;
+  em.height = em.clientHeight * devicePixelRatio;
+}
+window.addEventListener('resize', resize);
+
+function pushTrails() {
+  for (let i = 0; i < sim.n; i++) {
+    const t = trails[i];
+    t.push([sim.pos[3 * i], sim.pos[3 * i + 1]]);
+    if (t.length > TRAIL_MAX) t.shift();
+  }
+}
+
+function advance(steps) {
+  let event = null;
+  for (let s = 0; s < steps; s++) {
+    sim.step(DT);
+    const ev = detector.sample(sim);
+    if (ev) event = ev;
+    if ((s & 3) === 0) pushTrails();
+  }
+  if (event) recordEclipse(event);
+  return event;
+}
+
+function recordEclipse(ev) {
+  const dateStr = Eph.jdToUTCString(ev.jd);
+  const cat = CATALOG.find(([d]) =>
+    Math.abs(Eph.dateToJd(new Date(d + 'T12:00:00Z')) - ev.jd) < 1.5);
+  const log = document.getElementById('log');
+  if (log.querySelector('.empty')) log.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'event';
+  div.innerHTML =
+    `<span class="badge ${ev.type}">${ev.type.toUpperCase()}</span>${dateStr}` +
+    `<div class="meta">shadow axis missed Earth's center by ${(ev.dperp * Eph.AU_KM).toFixed(0)} km` +
+    (cat ? ` · <span class="verified">✓ matches NASA catalog (${cat[0]}, ${cat[1]})</span>`
+         : '') + `</div>`;
+  log.prepend(div);
+  showBanner(`☉ ${ev.type.toUpperCase()} SOLAR ECLIPSE — ${dateStr}` +
+             (cat ? '  ·  ✓ verified vs NASA catalog' : ''));
+}
+
+let bannerTimer = null;
+function showBanner(text) {
+  const b = document.getElementById('banner');
+  b.textContent = text;
+  b.style.display = 'block';
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { b.style.display = 'none'; }, 6500);
+}
+
+// --- main heliocentric view --------------------------------------------------
+function drawView() {
+  const W = view.width, H = view.height;
+  vctx.fillStyle = '#06080f';
+  vctx.fillRect(0, 0, W, H);
+  const cx = W / 2, cy = H / 2;
+  const scale = Math.min(W, H) / (2.15 * scaleAU) ;
+
+  // faint starfield (deterministic)
+  vctx.fillStyle = 'rgba(255,255,255,0.25)';
+  let seed = 12345;
+  for (let i = 0; i < 130; i++) {
+    seed = (seed * 16807) % 2147483647;
+    const x = (seed % 1000) / 1000 * W;
+    seed = (seed * 16807) % 2147483647;
+    const y = (seed % 1000) / 1000 * H;
+    vctx.fillRect(x, y, 1, 1);
+  }
+
+  const sunP = sim.body(sim.idx.sun);
+  const toScreen = (p) => [cx + (p[0] - sunP[0]) * scale, cy - (p[1] - sunP[1]) * scale];
+
+  for (let i = 0; i < sim.n; i++) {
+    const name = sim.names[i];
+    const st = STYLE[name];
+    if (name === 'Moon' && scaleAU > 3) continue;   // invisible at outer scale
+
+    // trail
+    const t = trails[i];
+    if (t.length > 2 && name !== 'Sun') {
+      vctx.beginPath();
+      for (let k = 0; k < t.length; k++) {
+        const [sx, sy] = toScreen(t[k]);
+        k ? vctx.lineTo(sx, sy) : vctx.moveTo(sx, sy);
+      }
+      vctx.strokeStyle = st.color + '40';
+      vctx.lineWidth = 1;
+      vctx.stroke();
+    }
+
+    const [sx, sy] = toScreen(sim.body(i));
+    if (sx < -50 || sx > W + 50 || sy < -50 || sy > H + 50) continue;
+    if (name === 'Sun') {
+      const g = vctx.createRadialGradient(sx, sy, 0, sx, sy, 26 * devicePixelRatio);
+      g.addColorStop(0, '#fff3c4'); g.addColorStop(0.3, '#ffd76e'); g.addColorStop(1, 'rgba(255,215,110,0)');
+      vctx.fillStyle = g;
+      vctx.beginPath(); vctx.arc(sx, sy, 26 * devicePixelRatio, 0, 7); vctx.fill();
+    }
+    vctx.fillStyle = st.color;
+    vctx.beginPath();
+    vctx.arc(sx, sy, st.r * devicePixelRatio, 0, 7);
+    vctx.fill();
+    if (name !== 'Moon') {
+      vctx.fillStyle = 'rgba(221,227,242,0.55)';
+      vctx.font = `${10.5 * devicePixelRatio}px ui-monospace, monospace`;
+      vctx.fillText(name, sx + 8 * devicePixelRatio, sy - 6 * devicePixelRatio);
+    }
+  }
+}
+
+// --- Earth–Moon shadow inset --------------------------------------------------
+function drawEarthMoon() {
+  const W = em.width, H = em.height;
+  emctx.fillStyle = '#080b15';
+  emctx.fillRect(0, 0, W, H);
+  const earth = sim.body(sim.idx.earth);
+  const moon = sim.body(sim.idx.moon);
+  const sun = sim.body(sim.idx.sun);
+
+  const cx = W / 2, cy = H / 2;
+  const scale = (Math.min(W, H) / 2 - 14) / 0.0028;   // lunar orbit fills inset
+
+  // rotate frame so the Sun is always to the LEFT
+  const sd = [sun[0] - earth[0], sun[1] - earth[1]];
+  const ang = Math.atan2(sd[1], sd[0]);
+  const rot = (p) => {
+    const dx = p[0] - earth[0], dy = p[1] - earth[1];
+    const x = dx * Math.cos(-ang) - dy * Math.sin(-ang);
+    const y = dx * Math.sin(-ang) + dy * Math.cos(-ang);
+    return [cx - x * scale, cy + y * scale];          // sun direction → left
+  };
+
+  // sunlight arrows
+  emctx.strokeStyle = 'rgba(255,215,110,0.35)';
+  emctx.lineWidth = 1;
+  for (let i = 0; i < 4; i++) {
+    const y = (H / 5) * (i + 1);
+    emctx.beginPath(); emctx.moveTo(6, y); emctx.lineTo(26, y); emctx.stroke();
+    emctx.beginPath(); emctx.moveTo(26, y); emctx.lineTo(20, y - 3); emctx.moveTo(26, y); emctx.lineTo(20, y + 3); emctx.stroke();
+  }
+  emctx.fillStyle = 'rgba(255,215,110,0.7)';
+  emctx.font = `${9 * devicePixelRatio}px ui-monospace, monospace`;
+  emctx.fillText('☉ sunlight', 6, 12 * devicePixelRatio);
+
+  const [ex, ey] = rot(earth);
+  const [mx, my] = rot(moon);
+
+  // Moon shadow cone (penumbra), drawn anti-sunward from the Moon
+  const g = Phy.solarEclipseGeometry(sun, earth, moon);
+  const sepDeg = (() => {
+    const a = [sun[0] - earth[0], sun[1] - earth[1], sun[2] - earth[2]];
+    const b = [moon[0] - earth[0], moon[1] - earth[1], moon[2] - earth[2]];
+    const na = Math.hypot(...a), nb = Math.hypot(...b);
+    const dot = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (na * nb);
+    return Math.acos(Math.min(1, Math.max(-1, dot))) * 180 / Math.PI;
+  })();
+
+  if (sepDeg < 25) {
+    const coneLen = 70 * devicePixelRatio;
+    emctx.fillStyle = g ? 'rgba(232,163,61,0.30)' : 'rgba(154,143,209,0.16)';
+    emctx.beginPath();
+    emctx.moveTo(mx, my - 2);
+    emctx.lineTo(mx + coneLen, my - 9);
+    emctx.lineTo(mx + coneLen, my + 9);
+    emctx.lineTo(mx, my + 2);
+    emctx.closePath();
+    emctx.fill();
+  }
+
+  // lunar orbit trail
+  emctx.strokeStyle = 'rgba(207,212,226,0.22)';
+  emctx.beginPath();
+  emctx.arc(ex, ey, Math.hypot(mx - ex, my - ey), 0, 7);
+  emctx.stroke();
+
+  // Earth
+  emctx.fillStyle = '#6db1ff';
+  emctx.beginPath(); emctx.arc(ex, ey, 6 * devicePixelRatio, 0, 7); emctx.fill();
+  // Earth night side (right half — sun is left)
+  emctx.fillStyle = 'rgba(0,0,0,0.45)';
+  emctx.beginPath(); emctx.arc(ex, ey, 6 * devicePixelRatio, -Math.PI / 2, Math.PI / 2); emctx.fill();
+  // Moon
+  emctx.fillStyle = g ? '#e8a33d' : '#cfd4e2';
+  emctx.beginPath(); emctx.arc(mx, my, 2.6 * devicePixelRatio, 0, 7); emctx.fill();
+
+  document.getElementById('elong').textContent = sepDeg.toFixed(2) + '°';
+  document.getElementById('axisMiss').textContent =
+    g ? `${(g.dperp * Eph.AU_KM).toFixed(0)} km — ${g.type.toUpperCase()} ECLIPSE` : '—';
+}
+
+// --- UI ------------------------------------------------------------------------
+function speedFromSlider(v) {
+  // 1 step/frame … ~600 steps/frame, log scale
+  return Math.max(1, Math.round(Math.exp(Math.log(600) * v / 100)));
+}
+function speedLabel(steps) {
+  const daysPerSec = steps * DT * 60;
+  return daysPerSec >= 1 ? `${daysPerSec.toFixed(0)} d/s` : `${(daysPerSec * 24).toFixed(1)} h/s`;
+}
+
+document.getElementById('speed').addEventListener('input', (e) => {
+  stepsPerFrame = speedFromSlider(+e.target.value);
+  document.getElementById('speedLabel').textContent = speedLabel(stepsPerFrame);
+});
+document.getElementById('playBtn').addEventListener('click', () => {
+  playing = !playing;
+  document.getElementById('playBtn').textContent = playing ? '❚❚ Pause' : '▶ Play';
+});
+document.getElementById('scaleInner').addEventListener('click', (e) => setScale(1.8, e.target));
+document.getElementById('scaleOuter').addEventListener('click', (e) => setScale(31, e.target));
+function setScale(s, btn) {
+  scaleAU = s;
+  trails.forEach((t) => t.length = 0);
+  document.querySelectorAll('.scaleBtns button').forEach((b) => b.classList.remove('active'));
+  if (btn.id.startsWith('scale')) btn.classList.add('active');
+}
+
+// Fast-forward (chunked so the UI stays alive) until the next eclipse is found
+document.getElementById('jumpBtn').addEventListener('click', () => {
+  if (jumping) return;
+  jumping = true;
+  playing = false;
+  document.getElementById('jumpBtn').textContent = '… integrating';
+  const chunk = () => {
+    let found = null;
+    for (let s = 0; s < 12000 && !found; s++) {
+      sim.step(DT);
+      found = detector.sample(sim);
+      if (s % 40 === 0) pushTrails();
+    }
+    if (found) {
+      recordEclipse(found);
+      jumping = false;
+      playing = true;
+      document.getElementById('playBtn').textContent = '❚❚ Pause';
+      document.getElementById('jumpBtn').textContent = '⏩ Predict next eclipse';
+    } else {
+      requestAnimationFrame(chunk);
+    }
+  };
+  requestAnimationFrame(chunk);
+});
+
+function frame() {
+  if (playing && !jumping) advance(stepsPerFrame);
+  drawView();
+  drawEarthMoon();
+  const d = Eph.jdToDate(sim.jd);
+  document.getElementById('dateBig').textContent = d.toISOString().slice(0, 10);
+  document.getElementById('dateSub').textContent =
+    `${d.toISOString().slice(11, 16)} UTC · JD ${sim.jd.toFixed(2)}`;
+  document.getElementById('drift').textContent = sim.energyDrift().toExponential(1);
+  document.getElementById('elapsedSim').textContent = `${(sim.jd - jd0).toFixed(1)} days`;
+  requestAnimationFrame(frame);
+}
+
+resize();
+document.getElementById('speedLabel').textContent = speedLabel(stepsPerFrame);
+stepsPerFrame = speedFromSlider(35);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

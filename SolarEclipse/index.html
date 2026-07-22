@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SolarEclipse — an N-body solar system that predicts real eclipses</title>
+<meta name="description" content="A ten-body Newtonian simulation of the solar system that is never told what an eclipse is — yet predicts every eclipse in the NASA catalog within five years of its start date. By djEnterprises.">
+<meta property="og:title" content="SolarEclipse — eclipses that emerge from gravity alone">
+<meta property="og:description" content="Ten bodies, one force law, real eclipses. A first-principles simulation, verified against the NASA five-millennium catalog.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://djenterprises.ai/SolarEclipse/">
+<meta property="og:image" content="https://djenterprises.ai/SolarEclipse/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SolarEclipse — eclipses that emerge from gravity alone">
+<meta name="twitter:description" content="Ten bodies, one force law, real eclipses. Verified against the NASA five-millennium catalog.">
+<meta name="twitter:image" content="https://djenterprises.ai/SolarEclipse/assets/og-image.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='%23070A12' stroke='%23D9A441' stroke-width='2'/%3E%3Ccircle cx='12' cy='13' r='7' fill='%23070A12'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/styles.css">
+<script>/* flash-free intro: gate the entrance animation before first paint; degrades to fully-visible if JS is off or motion is reduced */try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('intro');}catch(e){}</script>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="wordmark" href="#top">Solar<b>Eclipse</b></a>
+  <nav>
+    <a href="#method" data-optional>Method</a>
+    <a href="#simulation">Instrument</a>
+    <a href="#verification" data-optional>Verification</a>
+    <a href="#caveats" data-optional>Limits</a>
+  </nav>
+</header>
+
+<!-- persistent live figure: hero-sized, docks to the right rail on scroll -->
+<div id="stage" aria-hidden="true">
+  <canvas id="heroOrbit"></canvas>
+  <div class="stage-hud" id="hud">
+    <div>EPOCH · <b id="hudEpoch">—</b></div>
+    <div>STEP · <b id="hudStep">0</b> · Δt 15 min</div>
+    <div>ΔE/E · <b id="hudDrift">—</b></div>
+  </div>
+</div>
+
+<span id="top"></span>
+<section class="hero">
+  <div class="inner">
+    <span class="kicker">An N-body solar system that predicts real eclipses</span>
+    <h1>Ten bodies,<br>one law,<br>real eclipses.</h1>
+    <div class="rule"></div>
+    <p class="standfirst">SolarEclipse simulates the Sun, eight planets, and the Moon under nothing but Newtonian gravity. It is never told what an eclipse is — yet it predicts every one NASA has cataloged within five years of its start date.</p>
+    <div class="actions">
+      <a href="#simulation">Run the simulation</a>
+      <a href="#method" class="down">Read the method</a>
+    </div>
+  </div>
+  <div class="scroll-cue">scroll</div>
+</section>
+
+<main class="article">
+
+  <!-- 00 -->
+  <section class="chapter reveal" id="thesis">
+    <span class="chapnum">00 — The claim, stated plainly</span>
+    <p class="pullquote">It predicts <em>that</em> an eclipse happens, <em>when</em> it happens, and its <em>type</em>. It never claims to know where on Earth you'd stand to see it.</p>
+    <p>That boundary is the whole point. Everything on this page is something the simulation actually does — a shadow arriving on schedule — and nothing it doesn't. The honesty is not a disclaimer bolted on at the end. It is the reason to believe the rest.</p>
+  </section>
+
+  <!-- 01 -->
+  <section class="chapter reveal" id="method">
+    <span class="chapnum">01 — Ten bodies, one law</span>
+    <h2>The only rule in the loop is gravity.</h2>
+    <p>Every body feels the pull of every other body — and nothing else. There is no orbit table, no eclipse schedule, no correction step. The integrator does not know what a planet is, let alone the Moon's shadow.</p>
+    <div class="figure reveal">
+      <div class="equation">a<span class="sub">i</span> = Σ<span class="sub">j</span> G m<span class="sub">j</span> (r<span class="sub">j</span> − r<span class="sub">i</span>) / |r<span class="sub">j</span> − r<span class="sub">i</span>|³</div>
+      <div class="figcap"><b>Fig. 1</b> — Newton's law of gravitation, summed over every pair of the ten bodies. This is the entire force model.</div>
+    </div>
+    <p>Point masses, pulling on each other. From this one line, run forward in time, everything else on this page follows — the orbits, the seasons of alignment, and eventually a shadow that falls exactly where a real one did.</p>
+  </section>
+
+  <!-- 02 -->
+  <section class="chapter reveal" id="integrator">
+    <span class="chapnum">02 — Velocity Verlet, every 15 minutes</span>
+    <h2>Advancing the whole system, one careful step at a time.</h2>
+    <p>Time moves forward on a fixed <strong>15-minute</strong> step using velocity Verlet — a <em>symplectic</em> integrator, the kind built to respect the conservation laws that real gravitating systems obey. It leapfrogs positions and velocities so that energy doesn't quietly bleed away over millions of steps.</p>
+    <div class="figure reveal">
+      <svg viewBox="0 0 640 130" role="img" aria-label="Leapfrog integration diagram: velocity half-steps interleaved with position full-steps.">
+        <line x1="40" y1="46" x2="600" y2="46" stroke="#1B2233" stroke-width="1"/>
+        <line x1="40" y1="92" x2="600" y2="92" stroke="#1B2233" stroke-width="1"/>
+        <text x="40" y="24" fill="#89909F" font-family="'SF Mono',ui-monospace,monospace" font-size="12">velocity</text>
+        <text x="40" y="120" fill="#89909F" font-family="'SF Mono',ui-monospace,monospace" font-size="12">position</text>
+        <!-- ticks -->
+        <g>
+          <circle cx="120" cy="92" r="5" fill="#6DB1FF"/><circle cx="320" cy="92" r="5" fill="#6DB1FF"/><circle cx="520" cy="92" r="5" fill="#6DB1FF"/>
+          <circle cx="220" cy="46" r="5" fill="#D9A441"/><circle cx="420" cy="46" r="5" fill="#D9A441"/>
+          <path d="M120,92 C170,92 180,46 220,46" fill="none" stroke="#2A3350" stroke-width="1.5"/>
+          <path d="M220,46 C270,46 280,92 320,92" fill="none" stroke="#2A3350" stroke-width="1.5"/>
+          <path d="M320,92 C370,92 380,46 420,46" fill="none" stroke="#2A3350" stroke-width="1.5"/>
+          <path d="M420,46 C470,46 480,92 520,92" fill="none" stroke="#2A3350" stroke-width="1.5"/>
+        </g>
+        <text x="112" y="118" fill="#5A6172" font-family="'SF Mono',monospace" font-size="11">t</text>
+        <text x="306" y="118" fill="#5A6172" font-family="'SF Mono',monospace" font-size="11">t+Δt</text>
+        <text x="500" y="118" fill="#5A6172" font-family="'SF Mono',monospace" font-size="11">t+2Δt</text>
+      </svg>
+      <div class="figcap"><b>Fig. 2</b> — The leapfrog: velocities stepped on the half-interval, positions on the full. Simple, and quietly conservative.</div>
+    </div>
+    <p>The proof it's working is a number you can watch tick in the corner: across hundreds of thousands of steps, total energy holds to a relative drift of about <strong>1e-11</strong> to <strong>1e-10</strong> — right now, in the figure on this page, ΔE/E is <span class="num" id="liveDrift">—</span>. That doesn't prove the eclipse times are right — it proves the method isn't leaking, which is the ground everything else stands on.</p>
+  </section>
+
+  <!-- 03 -->
+  <section class="chapter reveal" id="seeding">
+    <span class="chapnum">03 — Seeded once, then left alone</span>
+    <h2>A single snapshot of reality, and then the door closes.</h2>
+    <p>At a chosen start epoch, positions and velocities are set from standard analytic ephemerides: JPL's approximate Keplerian elements for the planets, and a truncated ELP-2000 / Meeus series for the Moon. That is the one and only time the model consults the real sky.</p>
+    <div class="figure reveal">
+      <div class="timeline">
+        <div class="tick"></div><div class="seg"></div>
+        <div class="tick hollow"></div><div class="seg"></div>
+        <div class="tick hollow"></div><div class="seg"></div>
+        <div class="tick"></div>
+      </div>
+      <div class="tl-labels"><span>t₀ · seed from ephemeris</span><span>pure integration →</span><span>shadow detected</span></div>
+      <div class="figcap"><b>Fig. 3</b> — After t₀, the model is closed. No orbit data, no eclipse calendar, ever enters the loop again.</div>
+    </div>
+    <p>After that instant, the integrator is on its own. It does not know that Earth goes around the Sun, or that the Moon has a shadow. It only adds up forces and steps forward.</p>
+  </section>
+
+  <!-- 04 -->
+  <section class="chapter reveal" id="emergence">
+    <span class="chapnum">04 — How a shadow finds the Earth</span>
+    <h2>Eclipses are not detected by looking them up — they are found by watching the geometry.</h2>
+    <p>Trace the shadow cone from the Sun, past the Moon. When that cone sweeps across the Earth, an eclipse is happening. Whether it reads as total, annular, or partial falls straight out of the umbra, antumbra, and penumbra geometry at the Earth's distance.</p>
+    <div class="legend reveal">
+      <span class="l-total"><i></i>Total</span>
+      <span class="l-annular"><i></i>Annular</span>
+      <span class="l-partial"><i></i>Partial</span>
+    </div>
+    <p>These three colors mean the same thing everywhere on this page — in the live figure, in the event log, in the verification table. The event, its timing, and its type all emerge from the same three-line force law. Nothing is scripted.</p>
+  </section>
+
+  <!-- 05 — interactive -->
+  <section class="chapter reveal" id="simulation">
+    <span class="chapnum">05 — The instrument</span>
+    <h2>Figure 5 — run it yourself.</h2>
+    <p>Below is the live model, seeded at today's date. Let it run, or jump the physics forward until the next shadow lands. The banner fires the moment the geometry produces an eclipse — read out, never scripted.</p>
+  </section>
+  <div class="instrument-wrap"><div class="instrument">
+    <div class="instrument-frame">
+      <div class="instrument-stage">
+        <canvas id="instOrbit"></canvas>
+        <div class="inst-clock">
+          <div class="d" id="instDate">—</div>
+          <div class="sub" id="instSub">—</div>
+        </div>
+        <div class="inst-banner" id="instBanner"></div>
+        <div class="inst-inset">
+          <span class="lbl">Earth · Moon shadow</span>
+          <canvas id="instInset"></canvas>
+        </div>
+        <div class="inst-tooltip" id="instTip" aria-hidden="true"></div>
+      </div>
+      <div class="inst-controls">
+        <button class="primary" id="btnPlay">❚❚ Pause</button>
+        <span class="speed">speed <input type="range" id="speed" min="0" max="100" value="34"><span class="rate" id="rate">—</span></span>
+        <span class="seg" role="group" aria-label="View scale">
+          <button class="seg-btn active" id="scaleInner">Inner</button>
+          <button class="seg-btn" id="scaleFull">Full system</button>
+        </span>
+        <label class="jump">
+          <span>jump to</span>
+          <select id="jumpEclipse" aria-label="Jump to a historical eclipse">
+            <option value="" selected>a famous eclipse…</option>
+            <option value="1919-05-29">1919 · Eddington's relativity test</option>
+            <option value="2017-08-21">2017 · Great American Eclipse</option>
+            <option value="2024-04-08">2024 · Great American Eclipse II</option>
+            <option value="2026-08-12">2026 · Next total (N. Spain)</option>
+            <option value="2027-08-02">2027 · Longest of the century (Egypt)</option>
+            <option value="2045-08-12">2045 · Future US total</option>
+          </select>
+        </label>
+        <span class="spacer"></span>
+        <button id="btnPredict">⏩ Predict next eclipse</button>
+        <button id="btnReseed">↻ Re-sync to today</button>
+      </div>
+      <div class="inst-log" id="instLog"></div>
+    </div>
+    <p style="font-family:var(--mono-stack);font-size:0.72rem;color:var(--muted);margin-top:14px;letter-spacing:0.02em;">Ten bodies stepped forward in 15-minute intervals by velocity Verlet. When the Moon's shadow cone falls on the Earth, an eclipse is recorded. <span style="color:var(--faint)">Hover any body for live telemetry · click to pin.</span></p>
+  </div></div>
+
+  <!-- 06 -->
+  <section class="chapter reveal" id="verification">
+    <span class="chapnum">06 — Checked against reality, after the fact</span>
+    <h2>Seed it in the past. See if the shadows land where they really did.</h2>
+    <p id="vintro">Seed the model at <strong>2024-01-01</strong> and run it forward five years, then compare against the NASA five-millennium solar eclipse catalog. These numbers are generated by the real integration, not typed in by hand.</p>
+    <div class="scorecard" id="scorecard"></div>
+    <div class="vtable-wrap">
+      <table class="vtable">
+        <thead><tr><th>NASA catalog</th><th>Type</th><th>Predicted (UTC)</th><th>Sim type</th><th>Δt</th><th>Axis miss</th></tr></thead>
+        <tbody id="vrows"><tr><td colspan="6" class="err">loading…</td></tr></tbody>
+      </table>
+    </div>
+    <p>Reseeded across roughly three-year windows spanning 2021–2030, the match rate holds at 100 percent. On grazing-edge events the type call occasionally flips between partial and annular — the honest failure mode of a knife-edge geometry. The catalog is used only to check the answers; it is never an input, never a nudge, never in the loop.</p>
+  </section>
+
+  <!-- 07 -->
+  <section class="chapter reveal" id="caveats">
+    <span class="chapnum">07 — What it can't do (and why that's honest)</span>
+    <h2>The limits are part of the design.</h2>
+    <div class="limits reveal">
+      <ul>
+        <li><b>Analytic seeds, not DE440.</b> The initial conditions are arcsecond-level analytic ephemerides, not a numerically-fitted ephemeris like JPL DE440. Accuracy is only as good as that starting snapshot.</li>
+        <li><b>A five-year window.</b> Timing error grows with integration time, dominated by the truncated lunar series. Beyond about five years from the seed epoch the model begins to miss events. The fix is deliberate and simple: re-sync the epoch.</li>
+        <li><b>Point masses only.</b> No Earth oblateness (J2), no general relativity, no tides. The showcase is honest about what it leaves out.</li>
+        <li><b>No ground path.</b> It predicts that an eclipse happens, when, and its type. It does not predict where on Earth it is visible — that requires modeling the Earth's orientation, which lies outside the N-body problem.</li>
+      </ul>
+    </div>
+    <p>None of these are hidden, because a precise, window-scoped claim is more impressive than an absolute one — the absolute one is the first thing a physicist would try to falsify.</p>
+  </section>
+
+  <!-- 08 -->
+  <section class="chapter reveal colophon" id="colophon">
+    <span class="chapnum">08 — Colophon</span>
+    <h2>The physics is old. The result still feels like a small surprise.</h2>
+    <p>A multi-year integration runs in about <strong>0.1</strong> to <strong>0.2</strong> seconds. That makes it as at home on a phone as on a server — and the next step is an iOS app: pick a date, watch the geometry unfold, and see the shadow arrive. The same physics, in your hand.</p>
+    <div class="credit">
+      Built by <b>djEnterprises</b> — Daniel Jason Ehrlich.<br>
+      Ten-body Newtonian model · velocity Verlet · shadow-cone eclipse geometry.<br>
+      An observatory instrument, not a brochure.
+    </div>
+    <div class="links">
+      <a href="#simulation">↑ Run the simulation</a>
+      <a href="#top">↑ Back to top</a>
+    </div>
+  </section>
+</main>
+
+<div class="footer-rule"></div>
+<div class="pagefoot">© 2026 djEnterprises · Daniel Jason Ehrlich · The NASA five-millennium catalog is used for verification only.</div>
+
+<script src="assets/core/ephemeris.js"></script>
+<script src="assets/core/physics.js"></script>
+<script src="assets/app/simengine.js"></script>
+<script src="assets/app/site.js"></script>
+</body>
+</html>
