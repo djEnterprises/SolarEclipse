@@ -410,7 +410,7 @@
  * fall out of the geometry: whenever the Moon's shadow cone, traced from
  * the Sun through the Moon, sweeps across the Earth.
  */
-("use strict");
+"use strict";
 
 (function () {
   const Eph =
