@@ -106,3 +106,10 @@ iOS) and regression-checked against the same catalog oracle.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+<p align="center">
+  <a href="https://www.djenterprises.ai"><img src="SolarEclipse/assets/dje-logo.png" width="34" height="34" alt="djEnterprises logo"></a><br>
+  <a href="https://www.djenterprises.ai"><b>dj<em>Enterprises</em></b></a>
+</p>
