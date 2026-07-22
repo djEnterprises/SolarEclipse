@@ -1,0 +1,19 @@
+{
+  "name": "solareclipse",
+  "version": "1.0.0",
+  "description": "A ten-body Newtonian solar system that predicts real eclipses — verified against the NASA catalog. Zero dependencies.",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/djEnterprises/SolarEclipse.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "verify": "node solar-eclipse-sim/verify_range.js 2024-01-01 5",
+    "build:embed": "node solar-eclipse-sim/build_embed.js",
+    "export:data": "node solar-eclipse-sim/export_dataset.js"
+  }
+}

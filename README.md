@@ -1,5 +1,7 @@
 # SolarEclipse
 
+[![Verify against the NASA catalog](https://github.com/djEnterprises/SolarEclipse/actions/workflows/verify.yml/badge.svg)](https://github.com/djEnterprises/SolarEclipse/actions/workflows/verify.yml)
+
 **A ten-body Newtonian solar system that predicts real eclipses — and is never told what an eclipse is.**
 
 The Sun, all eight planets, and the Moon, integrated under nothing but pairwise gravity
@@ -36,7 +38,10 @@ Output of exactly that run (Node 24, this repo):
 
 Every solar eclipse in the five-year window — total, annular, partial — with the correct
 type, from raw gravity. The same run is enforced in CI on every push (exit code is
-nonzero on any miss or spurious detection).
+nonzero on any miss or spurious detection), alongside two structural gates: the harness
+and showcase copies of the physics must stay byte-identical, and the embed bundle must
+be byte-exactly reproducible from source. Contributing (human or agent)? Start with
+[`AGENTS.md`](AGENTS.md) — the repo's operating manual and invariants.
 
 ## What it honestly can't do
 

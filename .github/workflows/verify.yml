@@ -18,6 +18,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+      - name: Core copies are identical (sim harness ↔ showcase)
+        run: |
+          diff solar-eclipse-sim/ephemeris.js SolarEclipse/assets/core/ephemeris.js
+          diff solar-eclipse-sim/physics.js   SolarEclipse/assets/core/physics.js
       - name: Catalog audit — seed 2024-01-01, 5 years (supported window)
         run: node solar-eclipse-sim/verify_range.js 2024-01-01 5
       - name: Embed bundle is reproducible from source
